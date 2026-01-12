@@ -1,0 +1,54 @@
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.py[cod]
+*$py.class
+
+# 가상환경
+env/
+venv/
+.venv/
+.pdm-python
+__pypackages__/
+
+# 환경 변수
+.env
+.env.local
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 로그 및 테스트
+*.log
+.pytest_cache
+.coverage
+htmlcov/
+test-results/
+playwright-report/
+
+# 빌드
+dist/
+build/
+*.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Playwright 스크린샷 (런타임에 생성됨)
+*.png
+*.jpg
+
+# 문서
+README.md
