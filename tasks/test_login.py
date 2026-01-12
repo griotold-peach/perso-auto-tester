@@ -2,21 +2,34 @@ import sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 import time
+import asyncio
 
 # 프로젝트 루트를 Python 경로에 추가
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from utils.config import PERSO_EMAIL, PERSO_PASSWORD, HEADLESS, SCREENSHOT_DIR
-from utils.login import login
 
 def test_login_sync(log_callback=None):
     """로그인 테스트 (동기 버전)"""
     
     def log(msg):
-        if log_callback:
-            log_callback(msg)
+        """로그 출력 및 콜백 호출"""
         print(msg)
+        if log_callback:
+            # 비동기 콜백이면 asyncio로 실행
+            if asyncio.iscoroutinefunction(log_callback):
+                try:
+                    loop = asyncio.get_event_loop()
+                    if loop.is_running():
+                        asyncio.create_task(log_callback(msg))
+                    else:
+                        asyncio.run(log_callback(msg))
+                except:
+                    pass
+            else:
+                # 동기 콜백
+                log_callback(msg)
     
     log(f"🚀 로그인 테스트 시작")
     log(f"📧 이메일: {PERSO_EMAIL}")
@@ -77,7 +90,7 @@ def test_login_sync(log_callback=None):
             
             # 스크린샷 저장
             screenshot_path = SCREENSHOT_DIR / "login_success.png"
-            log(f"📸 스크린샷 촬영 중... ({screenshot_path})")
+            log(f"📸 스크린샷 촬영 중...")
             page.screenshot(path=str(screenshot_path), full_page=False)
             log(f"✅ 스크린샷 저장 완료!")
             
@@ -98,7 +111,7 @@ def test_login_sync(log_callback=None):
             try:
                 error_screenshot = SCREENSHOT_DIR / "login_error.png"
                 page.screenshot(path=str(error_screenshot), full_page=False)
-                log(f"📸 에러 스크린샷 저장: {error_screenshot}")
+                log(f"📸 에러 스크린샷 저장")
             except:
                 pass
             

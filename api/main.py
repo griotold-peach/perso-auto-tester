@@ -10,6 +10,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from utils.config import SCREENSHOT_DIR
+from api.routers import test, pages
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -25,7 +26,7 @@ app = FastAPI(
 # CORS 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: 운영에서는 실제 도메인으로 제한
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -45,8 +46,8 @@ def health_check():
         "version": "1.0.0"
     }
 
-# 라우터 등록은 나중에
-# from api.routers import test
-# app.include_router(test.router, prefix="/test", tags=["test"])
+# 라우터 등록
+app.include_router(pages.router, tags=["pages"])
+app.include_router(test.router, prefix="/test", tags=["test"])
 
 logger.info("PERSO Auto Tester API initialized")
