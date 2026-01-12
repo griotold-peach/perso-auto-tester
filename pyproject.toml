@@ -24,3 +24,4 @@ dev = "uvicorn api.main:app --reload --host 0.0.0.0 --port 8000"
 start = "uvicorn api.main:app --host 0.0.0.0 --port 8080"
 test_login = {env = {HEADLESS = "false"}, cmd = "python tasks/test_login.py"}
 test_upload = {env = {HEADLESS = "false"}, cmd = "python tasks/test_upload.py"}
+

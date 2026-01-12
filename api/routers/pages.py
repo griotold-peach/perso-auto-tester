@@ -154,8 +154,11 @@ async def index():
                 <button onclick="runTest('login')" id="loginBtn">
                     🔐 로그인 테스트
                 </button>
-                <button onclick="runTest('upload')" id="uploadBtn" disabled>
-                    📤 업로드 + 번역 테스트 (준비중)
+                <button onclick="runTest('upload')" id="uploadBtn">
+                    📤 업로드 테스트
+                </button>
+                <button onclick="runTest('translate')" id="translateBtn" disabled>
+                    🌏 번역 테스트 (준비중)
                 </button>
             </div>
             
