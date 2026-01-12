@@ -17,7 +17,6 @@ def test_login_sync(log_callback=None):
         """로그 출력 및 콜백 호출"""
         print(msg)
         if log_callback:
-            # 비동기 콜백이면 asyncio로 실행
             if asyncio.iscoroutinefunction(log_callback):
                 try:
                     loop = asyncio.get_event_loop()
@@ -28,7 +27,6 @@ def test_login_sync(log_callback=None):
                 except:
                     pass
             else:
-                # 동기 콜백
                 log_callback(msg)
     
     log(f"🚀 로그인 테스트 시작")
@@ -86,7 +84,30 @@ def test_login_sync(log_callback=None):
             page.wait_for_url('**/workspace/**', timeout=15000)
             
             log("✅ 로그인 성공!")
+            
+            # === 화면 로딩 대기 (개선!) ===
+            log("⏳ 페이지 로딩 대기 중...")
+            
+            # 1. 네트워크 idle 대기
+            try:
+                page.wait_for_load_state('networkidle', timeout=10000)
+                log("  ✓ 네트워크 로딩 완료")
+            except:
+                log("  ⚠️ 네트워크 타임아웃 (계속 진행)")
+            
+            # 2. 주요 UI 요소 로드 확인
+            try:
+                # PERSO AI workspace의 주요 요소
+                page.wait_for_selector('text=AI Dubbing', state='visible', timeout=5000)
+                log("  ✓ 주요 UI 요소 로드 완료")
+            except:
+                log("  ⚠️ 일부 요소 로딩 지연")
+            
+            # 3. 추가 안정화 (애니메이션 등)
+            log("  ✓ 화면 안정화 중...")
             time.sleep(2)
+            
+            log("✅ 화면 로딩 완료!")
             
             # 스크린샷 저장
             screenshot_path = SCREENSHOT_DIR / "login_success.png"
