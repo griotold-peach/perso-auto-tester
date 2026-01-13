@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from datetime import datetime
 
 load_dotenv()
 
@@ -22,6 +23,14 @@ HEADLESS = os.getenv('HEADLESS', 'true').lower() == 'true'
 # 스크린샷 저장 경로
 SCREENSHOT_DIR = Path("/tmp/screenshots")
 SCREENSHOT_DIR.mkdir(exist_ok=True)
+
+def get_current_time() -> str:
+    """현재 시간을 반환합니다.
+
+    Returns:
+        str: "2026-01-13 14:50:30" 형식의 현재 시간 문자열
+    """
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 print(f"✅ 설정 로드 완료")
 print(f"📧 이메일: {PERSO_EMAIL}")

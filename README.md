@@ -1,124 +1,164 @@
-cat > README.md << 'EOF'
-# PERSO Auto Tester
+# 🤖 PERSO Auto Tester
 
-🤖 PERSO AI 더빙 서비스 자동화 QA 테스트 시스템
+PERSO.AI 더빙 서비스 자동화 QA 테스트 시스템
 
-[![Deployment](https://img.shields.io/badge/deployed-DigitalOcean-0080FF)](https://perso-auto-tester-39ind.ondigitalocean.app)
-[![Python](https://img.shields.io/badge/Python-3.12-blue)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.128-green)](https://fastapi.tiangolo.com/)
-[![Playwright](https://img.shields.io/badge/Playwright-1.57-red)](https://playwright.dev/)
+FastAPI + Playwright 기반의 E2E 테스트 자동화 도구
 
----
+## ✨ 주요 기능
 
-## 🎯 기능
+### 🔐 로그인 테스트 (`test_login`)
+- 이메일/비밀번호 로그인 자동화
+- 팝업 자동 닫기
+- 로그인 성공 여부 확인
 
-- 🔐 **로그인 자동화**: PERSO.AI 로그인 프로세스 자동 검증
-- 📤 **영상 업로드**: 영상 파일 업로드 자동화 (개발 중)
-- 🌏 **번역 프로세스**: 번역 설정 및 실행 검증 (개발 중)
-- 📡 **실시간 로그**: WebSocket 기반 실시간 로그 스트리밍
-- 📸 **자동 스크린샷**: 테스트 성공/실패 시 자동 캡처
+### 📤 업로드 테스트 (`test_upload`)
+- 영상 파일 자동 업로드
+- 번역 설정 모달 감지
+- HubSpot 오버레이 제거
 
----
+### 🌏 번역 테스트 (`test_translate`)
+- 원본 언어 선택 (Korean)
+- 번역 언어 선택 (English)
+- 번역하기 버튼 클릭
+- 서비스 이용 동의
+- 가이드 팝업 닫기 (2단계)
+- 영상 처리 확인
 
 ## 🚀 빠른 시작
 
-### 웹 UI (QA/상사용)
-
-**접속**: https://perso-auto-tester-39ind.ondigitalocean.app
-
-1. 링크 접속
-2. "🔐 로그인 테스트" 버튼 클릭
-3. 실시간 로그 확인
-4. 스크린샷으로 결과 확인
-
-**⚠️ 주의**: 웹 UI는 headless 모드로 실행되어 브라우저 창이 보이지 않습니다.
-
-**💡 크롬 브라우저를 직접 보고 싶으신가요?**
-→ [실시간 브라우저 확인 가이드](docs/REALTIME_BROWSER_VIEWING.md)
-
----
-
-### 로컬 개발 (개발자용)
+### 1. 의존성 설치
 ```bash
-# 1. 클론
-git clone https://github.com/griotold-peach/perso-auto-tester.git
-cd perso-auto-tester
-
-# 2. 설치
 pdm install
-pdm run playwright install chromium
-
-# 3. 환경변수 설정
-cp .env.example .env
-# .env 파일 수정 (로그인 정보 입력)
-
-# 4. 테스트 실행 (크롬 창 뜸!)
-pdm run test_login       # 로그인 테스트
-pdm run test_upload      # 업로드 테스트 (개발 중)
-
-# 5. 웹 서버 실행
-pdm run dev              # http://localhost:8000
-```
-
----
-
-## 📖 문서
-
-- **[실시간 브라우저 확인](docs/REALTIME_BROWSER_VIEWING.md)**: 크롬 브라우저로 실시간 확인하는 방법 (상사/QA팀용)
-
----
-
-## 🏗️ 프로젝트 구조
-```
-perso-auto-tester/
-├── api/                     # FastAPI 백엔드
-│   ├── main.py             # 메인 앱
-│   └── routers/
-│       ├── pages.py        # HTML 페이지
-│       └── test.py         # WebSocket API
-├── tasks/                   # 테스트 스크립트
-│   ├── test_login.py       # 로그인 테스트
-│   └── test_upload.py      # 업로드 테스트 (개발 중)
-├── utils/                   # 유틸리티
-│   ├── config.py           # 환경 설정
-│   ├── login.py            # 로그인 함수
-│   └── popup_handler.py    # 팝업 처리
-├── test_videos/            # 테스트 영상
-│   └── sample.mp4
-├── docs/                   # 📚 문서
-│   └── REALTIME_BROWSER_VIEWING.md
-└── Dockerfile              # 도커 이미지
-```
-
----
-
-## 🔧 주요 명령어
-```bash
-# 테스트 실행 (크롬 창 보임)
-pdm run test_login          # 로그인 테스트
-pdm run test_upload         # 업로드 + 번역 테스트
-
-# 웹 서버
-pdm run dev                 # 개발 서버 (hot reload)
-pdm run start               # 프로덕션 서버
-
-# 의존성 관리
-pdm add package-name        # 패키지 추가
-pdm install                 # 설치
-pdm update                  # 업데이트
-
-# Playwright
 pdm run playwright install chromium
 pdm run playwright install-deps
 ```
 
----
-
-## 🌊 배포
-
-`main` 브랜치에 push하면 DigitalOcean에서 자동 배포:
+### 2. 환경 변수 설정
 ```bash
-git push origin main
+cp .env.example .env
 ```
 
----
+`.env` 파일 수정:
+```env
+PERSO_EMAIL=your-email@example.com
+PERSO_PASSWORD=your-password
+VIDEO_FILE_PATH=./test_videos/sample.mp4
+PERSO_URL=https://perso.ai/ko/workspace/vt
+HEADLESS=false
+```
+
+### 3. 테스트 실행
+```bash
+# 로그인 테스트
+pdm run test_login
+
+# 업로드 테스트
+pdm run test_upload
+
+# 번역 테스트 (전체 플로우)
+pdm run test_translate
+
+# 웹 서버 실행
+pdm run dev
+# http://localhost:8000
+```
+
+## 🏗️ 프로젝트 구조
+```
+perso-auto-tester/
+├── api/
+│   ├── main.py              # FastAPI 메인
+│   └── routers/
+│       └── test.py          # WebSocket 테스트 라우터
+├── tasks/
+│   ├── test_login.py        # 로그인 테스트
+│   ├── test_upload.py       # 업로드 테스트
+│   └── test_translate.py    # 번역 테스트 (전체 플로우)
+├── utils/
+│   ├── config.py            # 환경변수 로드
+│   └── popup_handler.py     # 팝업 처리 유틸
+├── templates/
+│   └── index.html           # 웹 UI
+├── test_videos/
+│   └── sample.mp4           # 테스트용 영상
+└── pyproject.toml
+```
+
+## 🛠️ 기술 스택
+
+- **Python 3.12**
+- **FastAPI** - 웹 서버
+- **Playwright** - 브라우저 자동화
+- **PDM** - 패키지 관리
+- **WebSocket** - 실시간 로그 전송
+
+## 📸 스크린샷
+
+테스트 완료 시 자동으로 스크린샷 저장:
+- `/tmp/screenshots/login_success.png`
+- `/tmp/screenshots/upload_modal.png`
+- `/tmp/screenshots/translate_success.png`
+
+## 🔧 주요 해결 과제
+
+### HubSpot 오버레이 문제
+- **문제**: HubSpot 마케팅 오버레이가 클릭 방해
+- **해결**: STEP 2, 4에서 오버레이 제거
+
+### 드롭다운 선택 불가
+- **문제**: 일반 클릭으로 언어 선택 실패
+- **해결**: 좌표 기반 클릭 (coordinate-based click)
+
+### 모달 자동 닫힘
+- **문제**: Escape 키로 번역 설정 모달까지 닫힘
+- **해결**: 모달 배경 클릭으로 드롭다운만 닫기
+
+### 가이드 팝업 2단계
+- **문제**: "Next" → "Done" 2단계 팝업
+- **해결**: 순차적 팝업 닫기 구현
+
+## 🌐 배포
+
+### DigitalOcean App Platform
+```yaml
+# .do/app.yaml
+name: perso-auto-tester
+services:
+  - name: web
+    github:
+      repo: griotold-peach/perso-auto-tester
+      branch: main
+    build_command: pdm install && pdm run playwright install chromium --with-deps
+    run_command: pdm run dev
+    envs:
+      - key: PERSO_EMAIL
+      - key: PERSO_PASSWORD
+      - key: VIDEO_FILE_PATH
+        value: ./test_videos/sample.mp4
+      - key: HEADLESS
+        value: "true"
+```
+
+배포 URL: https://perso-auto-tester-39ind.ondigitalocean.app
+
+## 📝 테스트 시나리오
+
+### 번역 테스트 전체 플로우
+1. ✅ 로그인
+2. ✅ 팝업/모달 닫기 (HubSpot 오버레이 포함)
+3. ✅ 파일 업로드
+4. ✅ 번역 설정 모달 확인
+5. ✅ 원본 언어: Korean 선택
+6. ✅ 번역 언어: English 선택
+7. ✅ 번역하기 버튼 클릭
+8. ✅ 서비스 이용 동의
+9. ✅ 가이드 팝업 닫기 (2단계)
+10. ✅ 영상 처리 확인
+
+## 🤝 기여
+
+이 프로젝트는 EST soft QA 팀의 자동화 테스트를 위해 개발되었습니다.
+
+## 📄 라이선스
+
+MIT License

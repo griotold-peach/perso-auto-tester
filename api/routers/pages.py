@@ -157,8 +157,8 @@ async def index():
                 <button onclick="runTest('upload')" id="uploadBtn">
                     📤 업로드 테스트
                 </button>
-                <button onclick="runTest('translate')" id="translateBtn" disabled>
-                    🌏 번역 테스트 (준비중)
+                <button onclick="runTest('translate')" id="translateBtn">
+                    🌏 번역 테스트
                 </button>
             </div>
             
@@ -177,6 +177,8 @@ async def index():
                 const logsDiv = document.getElementById('logs');
                 const screenshotDiv = document.getElementById('screenshot');
                 const loginBtn = document.getElementById('loginBtn');
+                const uploadBtn = document.getElementById('uploadBtn');
+                const translateBtn = document.getElementById('translateBtn');
                 
                 // 초기화
                 logsDiv.textContent = '';
@@ -184,6 +186,8 @@ async def index():
                 statusDiv.className = 'status active loading';
                 statusDiv.innerHTML = '<span class="spinner"></span>테스트 실행 중...';
                 loginBtn.disabled = true;
+                uploadBtn.disabled = true;
+                translateBtn.disabled = true;
                 
                 // WebSocket 연결
                 const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -225,6 +229,8 @@ async def index():
                             }
                             
                             loginBtn.disabled = false;
+                            uploadBtn.disabled = false;
+                            translateBtn.disabled = false;
                             ws.close();
                         }
                     } catch (e) {
@@ -237,11 +243,15 @@ async def index():
                     statusDiv.className = 'status active error';
                     statusDiv.textContent = '❌ 연결 오류가 발생했습니다';
                     loginBtn.disabled = false;
+                    uploadBtn.disabled = false;
+                    translateBtn.disabled = false;
                 };
                 
                 ws.onclose = () => {
                     console.log('WebSocket 연결 종료');
                     loginBtn.disabled = false;
+                    uploadBtn.disabled = false;
+                    translateBtn.disabled = false;
                 };
             }
         </script>

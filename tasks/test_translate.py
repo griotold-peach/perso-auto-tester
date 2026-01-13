@@ -531,6 +531,34 @@ def test_translate_sync(log_callback=None):
                     except Exception as e:
                         log(f"  ⚠️ 영상 확인 실패: {e}")
 
+                    # 영상 처리 완료 대기
+                    log("\n⏳ 영상 처리 완료 대기 중 (최대 5분)...")
+                    processing_complete = False
+                    max_wait_seconds = 300  # 5분
+                    wait_interval = 10  # 10초마다 체크
+                    elapsed = 0
+
+                    while elapsed < max_wait_seconds and not processing_complete:
+                        time.sleep(wait_interval)
+                        elapsed += wait_interval
+
+                        # "몇 초 전", "몇 분 전" 텍스트 찾기
+                        try:
+                            if page.get_by_text("초 전").is_visible(timeout=1000) or \
+                               page.get_by_text("분 전").is_visible(timeout=1000):
+                                log(f"  ✅ 영상 처리 완료! (대기 시간: {elapsed}초)")
+                                processing_complete = True
+                                break
+                            else:
+                                log(f"  ⏳ 처리 중... ({elapsed}/{max_wait_seconds}초)")
+                        except:
+                            log(f"  ⏳ 처리 중... ({elapsed}/{max_wait_seconds}초)")
+
+                    if not processing_complete:
+                        log(f"  ⚠️ 타임아웃! 5분 초과 (처리 미완료 가능성)")
+                    else:
+                        log(f"  🎉 영상 처리 성공!")
+
                 else:
                     log(f"  ⚠️ workspace 페이지가 아님: {current_url}")
             except Exception as e:

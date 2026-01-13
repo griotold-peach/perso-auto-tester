@@ -11,6 +11,7 @@ sys.path.insert(0, str(project_root))
 
 from tasks.test_login import test_login_sync
 from tasks.test_upload import test_upload_sync
+from tasks.test_translate import test_translate_sync
 
 logger = logging.getLogger("perso-auto-tester")
 router = APIRouter()
@@ -66,7 +67,23 @@ async def websocket_test(websocket: WebSocket, test_type: str):
                 "message": result["message"],
                 "screenshot": result.get("screenshot")
             })
+
+        elif test_type == "translate":
+            await websocket.send_json({"type": "log", "message": "🚀 번역 테스트 시작..."})
             
+            result = await loop.run_in_executor(
+                executor,
+                test_translate_sync,
+                send_log
+            )
+            
+            # 결과 전송
+            await websocket.send_json({
+                "type": "result",
+                "success": result["success"],
+                "message": result["message"],
+                "screenshot": result.get("screenshot")
+            })    
         else:
             await websocket.send_json({
                 "type": "result",
