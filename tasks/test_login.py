@@ -92,116 +92,133 @@ def test_login_sync(log_callback=None):
             time.sleep(2)
 
             profile_button = None
+            profile_info = {}  # 클릭한 요소 정보 저장
 
             try:
-                # === 디버깅: 페이지 전체 텍스트 확인 ===
-                log("  🔍 페이지 전체 텍스트 확인 중...")
-                try:
-                    body_text = page.inner_text('body', timeout=3000)
-                    log(f"  📄 페이지 텍스트 길이: {len(body_text)}자")
+                # === "Plan" 키워드로 프로필 버튼 찾기 ===
+                log("  🔍 'Plan' 키워드로 프로필 버튼 검색 중...")
 
-                    # 키워드 존재 확인
-                    keywords = ['griotold', 'EST', 'Plan', 'Free', '로그아웃']
-                    for kw in keywords:
-                        if kw in body_text:
-                            log(f"  ✓ '{kw}' 텍스트 발견")
-                        else:
-                            log(f"  ✗ '{kw}' 텍스트 없음")
-                except Exception as e:
-                    log(f"  ⚠️ 페이지 텍스트 확인 실패: {e}")
+                # 방법 1: text=Plan (정확히 "Plan"이 포함된 요소)
+                plan_elements = page.locator('text=Plan').all()
+                log(f"  📊 'Plan' 텍스트를 포함한 요소: {len(plan_elements)}개 발견")
 
-                # === 1차 시도: "griotold" 텍스트 (위치 제한 없음) ===
-                log("  🔍 'griotold' 텍스트로 검색 중 (전체 영역)...")
-                griotold_elements = page.locator('button:has-text("griotold"), div[role="button"]:has-text("griotold"), [role="button"]:has-text("griotold")').all()
-                log(f"  📊 'griotold' 요소 {len(griotold_elements)}개 발견")
-
-                for i, elem in enumerate(griotold_elements):
+                plan_candidates = []
+                for i, elem in enumerate(plan_elements):
                     try:
                         if elem.is_visible(timeout=500):
                             box = elem.bounding_box()
-                            text = elem.inner_text(timeout=500)
-                            log(f"    {i+1}. '{text[:50]}' at ({box['x']:.0f}, {box['y']:.0f})")
+                            text = elem.inner_text(timeout=500).strip()
+                            tag_name = elem.evaluate("el => el.tagName.toLowerCase()")
+                            class_name = elem.get_attribute("class") or ""
 
-                            # 좌측 영역 (x < 300, y < 400) - 범위 확대
-                            if box and box['x'] < 300 and box['y'] < 400:
-                                profile_button = elem
-                                log(f"  ✅ 프로필 버튼 선택 (griotold) at ({box['x']:.0f}, {box['y']:.0f})")
-                                break
-                            else:
-                                log(f"    ⚠️ 위치 필터링됨 (x={box['x']:.0f}, y={box['y']:.0f})")
+                            plan_candidates.append({
+                                'elem': elem,
+                                'text': text,
+                                'x': box['x'],
+                                'y': box['y'],
+                                'width': box['width'],
+                                'height': box['height'],
+                                'tag': tag_name,
+                                'class': class_name
+                            })
+
+                            log(f"    {i+1}. <{tag_name}> '{text[:50]}' at ({box['x']:.0f}, {box['y']:.0f}) size=({box['width']:.0f}x{box['height']:.0f})")
                     except Exception as e:
                         log(f"    ⚠️ {i+1}번째 요소 처리 실패: {e}")
 
-                # === 2차 시도: get_by_text 사용 ===
-                if not profile_button:
-                    log("  🔍 get_by_text로 'griotold' 검색 중...")
+                # 방법 2: get_by_text("Plan")도 시도
+                if not plan_candidates:
+                    log("  🔍 get_by_text('Plan')로 재검색 중...")
                     try:
-                        griotold_by_text = page.get_by_text("griotold", exact=False)
-                        count = griotold_by_text.count()
+                        plan_by_text = page.get_by_text("Plan", exact=False)
+                        count = plan_by_text.count()
                         log(f"  📊 get_by_text로 {count}개 발견")
 
-                        if count > 0:
-                            for i in range(count):
-                                try:
-                                    elem = griotold_by_text.nth(i)
-                                    if elem.is_visible(timeout=500):
-                                        box = elem.bounding_box()
-                                        text = elem.inner_text(timeout=500)
-                                        log(f"    {i+1}. '{text[:50]}' at ({box['x']:.0f}, {box['y']:.0f})")
+                        for i in range(count):
+                            try:
+                                elem = plan_by_text.nth(i)
+                                if elem.is_visible(timeout=500):
+                                    box = elem.bounding_box()
+                                    text = elem.inner_text(timeout=500).strip()
+                                    tag_name = elem.evaluate("el => el.tagName.toLowerCase()")
+                                    class_name = elem.get_attribute("class") or ""
 
-                                        if box and box['x'] < 300 and box['y'] < 400:
-                                            profile_button = elem
-                                            log(f"  ✅ 프로필 버튼 선택 (get_by_text) at ({box['x']:.0f}, {box['y']:.0f})")
-                                            break
-                                except Exception as e:
-                                    log(f"    ⚠️ {i+1}번째 요소 처리 실패: {e}")
+                                    plan_candidates.append({
+                                        'elem': elem,
+                                        'text': text,
+                                        'x': box['x'],
+                                        'y': box['y'],
+                                        'width': box['width'],
+                                        'height': box['height'],
+                                        'tag': tag_name,
+                                        'class': class_name
+                                    })
+
+                                    log(f"    {i+1}. <{tag_name}> '{text[:50]}' at ({box['x']:.0f}, {box['y']:.0f}) size=({box['width']:.0f}x{box['height']:.0f})")
+                            except Exception as e:
+                                log(f"    ⚠️ {i+1}번째 요소 처리 실패: {e}")
                     except Exception as e:
                         log(f"  ⚠️ get_by_text 실패: {e}")
 
-                # === 3차 시도: 좌측 영역 모든 클릭 가능 요소 검색 ===
-                if not profile_button:
-                    log("  🔍 좌측 영역(x<300, y<400) 모든 클릭 가능 요소 검색 중...")
-                    all_clickables = page.locator('button, div[role="button"], [role="button"]').all()
-                    log(f"  📊 전체 클릭 가능 요소 {len(all_clickables)}개")
+                # 프로필 버튼 선택: 클릭 가능한 첫 번째 요소 선택
+                if plan_candidates:
+                    log(f"  📋 총 {len(plan_candidates)}개의 'Plan' 후보 발견")
 
-                    left_candidates = []
-                    for elem in all_clickables:
+                    # 클릭 가능한 요소인지 확인 (button, a, div[role="button"] 등)
+                    clickable_candidates = []
+                    for cand in plan_candidates:
+                        # 부모 요소가 클릭 가능한지 확인
                         try:
-                            if elem.is_visible(timeout=100):
-                                box = elem.bounding_box()
-                                if box and box['x'] < 300 and box['y'] < 400:
-                                    try:
-                                        text = elem.inner_text(timeout=100).strip()
-                                        if text:
-                                            left_candidates.append({
-                                                'elem': elem,
-                                                'text': text,
-                                                'x': box['x'],
-                                                'y': box['y']
-                                            })
-                                    except:
-                                        pass
+                            # 현재 요소가 버튼이거나 링크인 경우
+                            if cand['tag'] in ['button', 'a']:
+                                clickable_candidates.append(cand)
+                            else:
+                                # 부모 요소 중 클릭 가능한 요소 찾기
+                                parent_button = cand['elem'].locator('xpath=ancestor::button[1] | ancestor::a[1] | ancestor::div[@role="button"][1]').first
+                                if parent_button.count() > 0:
+                                    box = parent_button.bounding_box()
+                                    text = parent_button.inner_text(timeout=500).strip()
+                                    tag_name = parent_button.evaluate("el => el.tagName.toLowerCase()")
+                                    class_name = parent_button.get_attribute("class") or ""
+
+                                    clickable_candidates.append({
+                                        'elem': parent_button,
+                                        'text': text,
+                                        'x': box['x'],
+                                        'y': box['y'],
+                                        'width': box['width'],
+                                        'height': box['height'],
+                                        'tag': tag_name,
+                                        'class': class_name
+                                    })
+                                else:
+                                    # 부모가 없으면 현재 요소 그대로 사용
+                                    clickable_candidates.append(cand)
                         except:
-                            continue
+                            clickable_candidates.append(cand)
 
-                    log(f"  📋 좌측 영역 후보 {len(left_candidates)}개 발견:")
-                    for i, cand in enumerate(left_candidates[:20]):  # 상위 20개 출력
-                        log(f"    {i+1}. '{cand['text'][:50]}' at ({cand['x']:.0f}, {cand['y']:.0f})")
+                    log(f"  📋 클릭 가능한 후보: {len(clickable_candidates)}개")
 
-                    # 키워드 매칭
-                    for cand in left_candidates:
-                        text_lower = cand['text'].lower()
-                        if any(kw in text_lower for kw in ['griotold', 'est', 'plan', 'free']):
-                            profile_button = cand['elem']
-                            log(f"  ✅ 프로필 버튼 선택 (키워드 매칭): '{cand['text'][:50]}' at ({cand['x']:.0f}, {cand['y']:.0f})")
-                            break
-
-                    # 키워드 매칭 실패시: 가장 위에 있는 요소 선택
-                    if not profile_button and left_candidates:
-                        left_candidates.sort(key=lambda c: (c['y'], c['x']))
-                        best = left_candidates[0]
+                    if clickable_candidates:
+                        # 첫 번째 후보 선택
+                        best = clickable_candidates[0]
                         profile_button = best['elem']
-                        log(f"  ⚠️ 키워드 매칭 실패, 최상단 좌측 요소 선택: '{best['text'][:50]}' at ({best['x']:.0f}, {best['y']:.0f})")
+                        profile_info = {
+                            'text': best['text'],
+                            'position': f"({best['x']:.0f}, {best['y']:.0f})",
+                            'size': f"{best['width']:.0f}x{best['height']:.0f}",
+                            'tag': best['tag'],
+                            'class': best['class'][:50] if best['class'] else 'N/A'
+                        }
+
+                        log(f"  ✅ 프로필 버튼 선택됨:")
+                        log(f"     • 태그: <{profile_info['tag']}>")
+                        log(f"     • 텍스트: '{profile_info['text'][:50]}'")
+                        log(f"     • 위치: {profile_info['position']}")
+                        log(f"     • 크기: {profile_info['size']}")
+                        log(f"     • 클래스: {profile_info['class']}")
+                else:
+                    log("  ⚠️ 'Plan' 키워드를 포함한 요소를 찾지 못했습니다")
 
             except Exception as e:
                 log(f"  ❌ 프로필 버튼 검색 중 에러: {e}")
@@ -229,7 +246,10 @@ def test_login_sync(log_callback=None):
 
             # 프로필 드롭다운 클릭
             log("  👆 프로필 드롭다운 클릭 중...")
+            if profile_info:
+                log(f"     클릭할 요소: <{profile_info['tag']}> '{profile_info['text'][:30]}' at {profile_info['position']}")
             profile_button.click()
+            log("  ✅ 클릭 완료!")
 
             # 드롭다운 애니메이션 완료 대기
             log("  ⏳ 드롭다운 메뉴 로딩 대기 중...")
