@@ -149,3 +149,51 @@ def remove_hubspot_overlay(page, log=None):
             print(f"⚠️ HubSpot 오버레이 제거 실패: {e}")
 
         return False
+
+def close_all_modals_and_popups(page, log=None):
+    """모든 팝업/모달/오버레이 한 번에 정리
+    
+    Args:
+        page: Playwright page 객체
+        log: 로그 출력 함수 (optional)
+    
+    Returns:
+        None
+    """
+    def _log(msg):
+        if log:
+            log(msg)
+        else:
+            print(msg)
+    
+    _log("🧹 팝업/모달 정리 시작...")
+    
+    # 1. 쿠키 수락
+    try:
+        accept_cookies(page)
+    except Exception as e:
+        _log(f"  ⚠️ 쿠키 수락 실패: {e}")
+    
+    # 2. HubSpot iframe 제거
+    try:
+        close_hubspot_iframe_popup(page)
+    except Exception as e:
+        _log(f"  ⚠️ HubSpot iframe 실패: {e}")
+    
+    # 3. HubSpot 오버레이 제거
+    try:
+        remove_hubspot_overlay(page, _log)
+    except Exception as e:
+        _log(f"  ⚠️ HubSpot 오버레이 실패: {e}")
+    
+    # 4. 모든 팝업 닫기
+    try:
+        close_all_popups(page)
+    except Exception as e:
+        _log(f"  ⚠️ 팝업 닫기 실패: {e}")
+    
+    # 5. 맨 위로 스크롤
+    page.evaluate("window.scrollTo(0, 0)")
+    time.sleep(1)
+    
+    _log("✅ 팝업/모달 정리 완료!")

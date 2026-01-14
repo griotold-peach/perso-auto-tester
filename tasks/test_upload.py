@@ -2,7 +2,6 @@ import sys
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 import time
-import asyncio
 
 # 프로젝트 루트 추가
 project_root = Path(__file__).parent.parent
@@ -13,24 +12,13 @@ from utils.login import do_login
 from utils.upload import upload_file
 from utils.popup_handler import accept_cookies, close_hubspot_iframe_popup, close_all_popups, remove_hubspot_overlay
 from utils.browser import create_browser_context
+from utils.logger import create_logger
 
 def test_upload_sync(log_callback=None):
     """파일 업로드 테스트 (번역 설정 모달 나타나는지까지)"""
-    
-    def log(msg):
-        """로그 출력 및 콜백 호출"""
-        print(msg)
-        if log_callback:
-            if asyncio.iscoroutinefunction(log_callback):
-                try:
-                    loop = asyncio.get_event_loop()
-                    if loop.is_running():
-                        asyncio.create_task(log_callback(msg))
-                except:
-                    pass
-            else:
-                log_callback(msg)
-    
+
+    log = create_logger(log_callback)
+
     log(f"🚀 업로드 테스트 시작")
     log(f"📧 이메일: {PERSO_EMAIL}")
     log(f"🎬 영상 파일: {VIDEO_FILE_PATH}")
